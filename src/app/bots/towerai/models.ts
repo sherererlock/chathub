@@ -16,10 +16,8 @@ export const TOWERAI_MODEL_PROVIDERS: TowerAIModelProvider[] = [
     provider: 'gpt',
     label: 'GPT',
     models: [
-      { label: 'GPT-5.2', value: 'gpt-5.2' },
-      { label: 'GPT-5.1', value: 'gpt-5.1' },
-      { label: 'GPT-5 mini', value: 'gpt-5-mini' },
-      { label: 'GPT-4.1', value: 'gpt-4.1' },
+      { label: 'GPT-5.4', value: 'gpt-5.4' },
+      { label: 'GPT-5.1', value: 'gpt-5.2' },
       { label: 'GPT-4o', value: 'gpt-4o' },
     ],
   },
@@ -38,11 +36,8 @@ export const TOWERAI_MODEL_PROVIDERS: TowerAIModelProvider[] = [
     provider: 'gemini',
     label: 'Gemini',
     models: [
-      { label: 'Gemini 3 Pro Preview', value: 'gemini-3-pro-preview' },
+      { label: 'Gemini 3.1 Pro Preview', value: 'gemini-3.1-pro-preview' },
       { label: 'Gemini 3.0 Flash', value: 'gemini-3-flash-preview' },
-      { label: 'Gemini 2.5 Pro', value: 'gemini-2.5-pro' },
-      { label: 'Gemini 2.5 Flash', value: 'gemini-2.5-flash' },
-      { label: 'Gemini 2.5 Flash-Lite', value: 'gemini-2.5-flash-lite' },
     ],
   },
   {
