@@ -10,8 +10,9 @@ import { Input } from '~app/components/Input'
 import RadioGroup from '~app/components/RadioGroup'
 import Select from '~app/components/Select'
 import Toggle from '~app/components/Toggle'
-import { UserConfig } from '~services/user-config'
+import type { UserConfig } from '~services/user-config'
 import Blockquote from './Blockquote'
+import { normalizeTowerAIModelForProvider } from './TowerAISettings.helpers'
 
 interface Props {
   userConfig: UserConfig
@@ -40,11 +41,8 @@ const TowerAISettings: FC<Props> = ({ userConfig, updateConfigValue }) => {
   )
   const providerModels = useMemo(() => getTowerAIModelsForProvider(selectedProvider), [selectedProvider])
   const selectedModel = useMemo(
-    () =>
-      providerModels.some((item) => item.value === userConfig.toweraiModel)
-        ? userConfig.toweraiModel
-        : providerModels[0]?.value ?? '',
-    [providerModels, userConfig.toweraiModel],
+    () => normalizeTowerAIModelForProvider(userConfig.toweraiModel, selectedProvider),
+    [selectedProvider, userConfig.toweraiModel],
   )
 
   const refreshHelperState = useCallback(async () => {
@@ -115,6 +113,12 @@ const TowerAISettings: FC<Props> = ({ userConfig, updateConfigValue }) => {
       refreshHelperState()
     }
   }, [refreshHelperState, userConfig.toweraiAuthMode])
+
+  useEffect(() => {
+    if (selectedModel !== userConfig.toweraiModel) {
+      updateConfigValue({ toweraiModel: selectedModel })
+    }
+  }, [selectedModel, updateConfigValue, userConfig.toweraiModel])
 
   return (
     <div className="flex flex-col gap-3 w-[420px]">
