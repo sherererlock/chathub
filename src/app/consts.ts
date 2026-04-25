@@ -12,6 +12,7 @@ import mistralLogo from '~/assets/logos/mistral.png'
 import piLogo from '~/assets/logos/pi.png'
 import pplxLogo from '~/assets/logos/pplx.jpg'
 import qianwenLogo from '~/assets/logos/qianwen.png'
+import toweraiLogo from '~/assets/logos/towerai.svg'
 import vicunaLogo from '~/assets/logos/vicuna.jpg'
 import wizardlmLogo from '~/assets/logos/wizardlm.png'
 import xunfeiLogo from '~/assets/logos/xunfei.png'
@@ -90,6 +91,10 @@ export const CHATBOTS: Record<BotId, { name: string; avatar: string }> = {
   yi: {
     name: 'Yi-Chat',
     avatar: yiLogo,
+  },
+  towerai: {
+    name: 'TowerAI',
+    avatar: toweraiLogo,
   },
 }
 

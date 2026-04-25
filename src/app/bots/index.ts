@@ -9,6 +9,7 @@ import { LMSYSBot } from './lmsys'
 import { PerplexityBot } from './perplexity'
 import { PiBot } from './pi'
 import { QianwenWebBot } from './qianwen'
+import { TowerAIBot } from './towerai'
 import { XunfeiBot } from './xunfei'
 
 export type BotId =
@@ -30,6 +31,7 @@ export type BotId =
   | 'yi'
   | 'grok'
   | 'gemini'
+  | 'towerai'
 
 export function createBotInstance(botId: BotId) {
   switch (botId) {
@@ -69,6 +71,8 @@ export function createBotInstance(botId: BotId) {
       return new GrokWebBot()
     case 'gemini':
       return new GeminiBot()
+    case 'towerai':
+      return new TowerAIBot()
   }
 }
 

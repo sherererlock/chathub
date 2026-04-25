@@ -21,6 +21,7 @@ import EnabledBotsSettings from '~app/components/Settings/EnabledBotsSettings'
 import ExportDataPanel from '~app/components/Settings/ExportDataPanel'
 import PerplexityAPISettings from '~app/components/Settings/PerplexityAPISettings'
 import ShortcutPanel from '~app/components/Settings/ShortcutPanel'
+import TowerAISettings from '~app/components/Settings/TowerAISettings'
 import { ALL_IN_ONE_PAGE_ID, CHATBOTS } from '~app/consts'
 import {
   BingConversationStyle,
@@ -68,6 +69,8 @@ function SettingPage() {
 
   const save = useCallback(async () => {
     let apiHost = userConfig?.openaiApiHost
+    let toweraiBaseUrl = userConfig?.toweraiBaseUrl
+    let toweraiHelperUrl = userConfig?.toweraiHelperUrl
     if (apiHost) {
       apiHost = apiHost.replace(/\/$/, '')
       if (!apiHost.startsWith('http')) {
@@ -82,7 +85,34 @@ function SettingPage() {
     } else {
       apiHost = undefined
     }
-    await updateUserConfig({ ...userConfig!, openaiApiHost: apiHost })
+    if (toweraiBaseUrl) {
+      toweraiBaseUrl = toweraiBaseUrl.replace(/\/$/, '')
+      if (!toweraiBaseUrl.startsWith('http')) {
+        toweraiBaseUrl = 'https://' + toweraiBaseUrl
+      }
+      try {
+        await Browser.permissions.request({ origins: [toweraiBaseUrl + '/*'] })
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    if (toweraiHelperUrl) {
+      toweraiHelperUrl = toweraiHelperUrl.replace(/\/$/, '')
+      if (!toweraiHelperUrl.startsWith('http')) {
+        toweraiHelperUrl = 'http://' + toweraiHelperUrl
+      }
+      try {
+        await Browser.permissions.request({ origins: [toweraiHelperUrl + '/*'] })
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    await updateUserConfig({
+      ...userConfig!,
+      openaiApiHost: apiHost,
+      toweraiBaseUrl,
+      toweraiHelperUrl,
+    })
     setDirty(false)
     toast.success('Saved')
     setTimeout(() => location.reload(), 500)
@@ -193,6 +223,9 @@ function SettingPage() {
             {userConfig.perplexityMode === PerplexityMode.API && (
               <PerplexityAPISettings userConfig={userConfig} updateConfigValue={updateConfigValue} />
             )}
+          </ChatBotSettingPanel>
+          <ChatBotSettingPanel title="TowerAI">
+            <TowerAISettings userConfig={userConfig} updateConfigValue={updateConfigValue} />
           </ChatBotSettingPanel>
         </div>
         <ShortcutPanel />

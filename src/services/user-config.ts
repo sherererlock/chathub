@@ -82,6 +82,14 @@ const userConfigWithDefaultValue = {
   perplexityMode: PerplexityMode.Webapp,
   perplexityApiKey: '',
   geminiApiKey: '',
+  toweraiBaseUrl: 'https://tower-ai.yottastudios.com',
+  toweraiAuthMode: 'helper' as 'helper' | 'manual',
+  toweraiToken: '',
+  toweraiAuthToken: '',
+  toweraiModel: 'gpt-4.1',
+  toweraiCustomModel: '',
+  toweraiHelperUrl: 'http://127.0.0.1:21941',
+  toweraiAutoRefresh: true,
 }
 
 export type UserConfig = typeof userConfigWithDefaultValue
