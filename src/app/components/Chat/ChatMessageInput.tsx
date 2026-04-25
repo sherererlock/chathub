@@ -21,6 +21,7 @@ import { trackEvent } from '~app/plausible'
 import { Prompt } from '~services/prompts'
 import Button from '../Button'
 import PromptCombobox, { ComboboxContext } from '../PromptCombobox'
+import { canSubmitChatMessage } from './chat-message-input'
 import PromptLibraryDialog from '../PromptLibrary/Dialog'
 import TextInput from './TextInput'
 
@@ -105,9 +106,10 @@ const ChatMessageInput: FC<Props> = (props) => {
   const onFormSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault()
-      if (value.trim()) {
-        props.onSubmit(value, image)
+      if (!canSubmitChatMessage(value, image)) {
+        return
       }
+      props.onSubmit(value, image)
       setValue('')
       setImage(undefined)
     },
