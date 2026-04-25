@@ -72,6 +72,13 @@ export const TOWERAI_MODEL_PROVIDERS: TowerAIModelProvider[] = [
 export const DEFAULT_TOWERAI_PROVIDER: TowerAIProviderId = TOWERAI_MODEL_PROVIDERS[0].provider
 export const DEFAULT_TOWERAI_MODEL = TOWERAI_MODEL_PROVIDERS[0].models[0].value
 
+export const TOWERAI_COMMON_MODELS = TOWERAI_MODEL_PROVIDERS.flatMap((provider) => provider.models)
+
+const LEGACY_TOWERAI_PROVIDER_BY_MODEL: Partial<Record<string, TowerAIProviderId>> = {
+  'claude-sonnet-4.5': 'claude',
+  'claude-3.7-sonnet': 'claude',
+}
+
 export function getTowerAIModelsForProvider(provider: TowerAIProviderId) {
   return TOWERAI_MODEL_PROVIDERS.find((item) => item.provider === provider)?.models ?? TOWERAI_MODEL_PROVIDERS[0].models
 }
@@ -86,7 +93,7 @@ export function findTowerAIProviderByModel(model: string): TowerAIProviderId {
     provider.models.some((item) => item.value === normalized),
   )
 
-  return matchedProvider?.provider ?? DEFAULT_TOWERAI_PROVIDER
+  return matchedProvider?.provider ?? LEGACY_TOWERAI_PROVIDER_BY_MODEL[normalized] ?? DEFAULT_TOWERAI_PROVIDER
 }
 
 export function resolveTowerAIModel(selected: string, custom: string) {
