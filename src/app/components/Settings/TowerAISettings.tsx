@@ -114,12 +114,6 @@ const TowerAISettings: FC<Props> = ({ userConfig, updateConfigValue }) => {
     }
   }, [refreshHelperState, userConfig.toweraiAuthMode])
 
-  useEffect(() => {
-    if (selectedModel !== userConfig.toweraiModel) {
-      updateConfigValue({ toweraiModel: selectedModel })
-    }
-  }, [selectedModel, updateConfigValue, userConfig.toweraiModel])
-
   return (
     <div className="flex flex-col gap-3 w-[420px]">
       <div className="flex flex-col gap-1">

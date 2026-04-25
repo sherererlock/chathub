@@ -74,26 +74,31 @@ export const DEFAULT_TOWERAI_MODEL = TOWERAI_MODEL_PROVIDERS[0].models[0].value
 
 export const TOWERAI_COMMON_MODELS = TOWERAI_MODEL_PROVIDERS.flatMap((provider) => provider.models)
 
-const LEGACY_TOWERAI_PROVIDER_BY_MODEL: Partial<Record<string, TowerAIProviderId>> = {
-  'claude-sonnet-4.5': 'claude',
-  'claude-3.7-sonnet': 'claude',
+const LEGACY_TOWERAI_MODEL_ALIASES: Partial<Record<string, string>> = {
+  'claude-sonnet-4.5': 'claude-sonnet-4-5-20250929',
+  'claude-3.7-sonnet': 'claude-3-7-sonnet-20250219',
 }
 
 export function getTowerAIModelsForProvider(provider: TowerAIProviderId) {
   return TOWERAI_MODEL_PROVIDERS.find((item) => item.provider === provider)?.models ?? TOWERAI_MODEL_PROVIDERS[0].models
 }
 
-export function findTowerAIProviderByModel(model: string): TowerAIProviderId {
+export function canonicalizeTowerAIModel(model: string) {
   const normalized = model.trim()
-  if (!normalized) {
+  return LEGACY_TOWERAI_MODEL_ALIASES[normalized] ?? normalized
+}
+
+export function findTowerAIProviderByModel(model: string): TowerAIProviderId {
+  const canonicalModel = canonicalizeTowerAIModel(model)
+  if (!canonicalModel) {
     return DEFAULT_TOWERAI_PROVIDER
   }
 
   const matchedProvider = TOWERAI_MODEL_PROVIDERS.find((provider) =>
-    provider.models.some((item) => item.value === normalized),
+    provider.models.some((item) => item.value === canonicalModel),
   )
 
-  return matchedProvider?.provider ?? LEGACY_TOWERAI_PROVIDER_BY_MODEL[normalized] ?? DEFAULT_TOWERAI_PROVIDER
+  return matchedProvider?.provider ?? DEFAULT_TOWERAI_PROVIDER
 }
 
 export function resolveTowerAIModel(selected: string, custom: string) {
@@ -102,8 +107,8 @@ export function resolveTowerAIModel(selected: string, custom: string) {
     return customModel
   }
 
-  const curatedModel = selected.trim()
-  if (curatedModel) {
+  const curatedModel = canonicalizeTowerAIModel(selected)
+  if (TOWERAI_COMMON_MODELS.some((item) => item.value === curatedModel)) {
     return curatedModel
   }
 

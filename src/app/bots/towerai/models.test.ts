@@ -36,6 +36,15 @@ test('maps legacy Claude model ids back to the Claude provider', () => {
   assert.equal(findTowerAIProviderByModel('claude-3.7-sonnet'), 'claude')
 })
 
+test('canonicalizes legacy Claude model ids before sending TowerAI requests', () => {
+  assert.equal(resolveTowerAIModel('claude-sonnet-4.5', ''), 'claude-sonnet-4-5-20250929')
+  assert.equal(resolveTowerAIModel('claude-3.7-sonnet', ''), 'claude-3-7-sonnet-20250219')
+})
+
+test('falls back to the default curated model when the saved TowerAI model is unknown', () => {
+  assert.equal(resolveTowerAIModel('not-in-curated-list', ''), DEFAULT_TOWERAI_MODEL)
+})
+
 test('returns exactly five curated models for each first-release provider', () => {
   assert.equal(getTowerAIModelsForProvider('gpt').length, 5)
   assert.equal(getTowerAIModelsForProvider('claude').length, 5)
