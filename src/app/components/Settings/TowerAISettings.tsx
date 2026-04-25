@@ -1,5 +1,10 @@
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
-import { TOWERAI_COMMON_MODELS } from '~app/bots/towerai/models'
+import {
+  findTowerAIProviderByModel,
+  getTowerAIModelsForProvider,
+  TOWERAI_MODEL_PROVIDERS,
+  type TowerAIProviderId,
+} from '~app/bots/towerai/models'
 import Button from '~app/components/Button'
 import { Input } from '~app/components/Input'
 import RadioGroup from '~app/components/RadioGroup'
@@ -29,6 +34,18 @@ const TowerAISettings: FC<Props> = ({ userConfig, updateConfigValue }) => {
   const [loadingAction, setLoadingAction] = useState<'login' | 'refresh' | 'status' | ''>('')
 
   const helperBaseUrl = useMemo(() => userConfig.toweraiHelperUrl.replace(/\/$/, ''), [userConfig.toweraiHelperUrl])
+  const selectedProvider = useMemo(
+    () => findTowerAIProviderByModel(userConfig.toweraiModel),
+    [userConfig.toweraiModel],
+  )
+  const providerModels = useMemo(() => getTowerAIModelsForProvider(selectedProvider), [selectedProvider])
+  const selectedModel = useMemo(
+    () =>
+      providerModels.some((item) => item.value === userConfig.toweraiModel)
+        ? userConfig.toweraiModel
+        : providerModels[0]?.value ?? '',
+    [providerModels, userConfig.toweraiModel],
+  )
 
   const refreshHelperState = useCallback(async () => {
     if (!helperBaseUrl) {
@@ -123,10 +140,22 @@ const TowerAISettings: FC<Props> = ({ userConfig, updateConfigValue }) => {
       </div>
 
       <div className="flex flex-col gap-1">
+        <p className="font-medium text-sm">Provider</p>
+        <Select
+          options={TOWERAI_MODEL_PROVIDERS.map((item) => ({ name: item.label, value: item.provider }))}
+          value={selectedProvider}
+          onChange={(provider) => {
+            const nextModel = getTowerAIModelsForProvider(provider as TowerAIProviderId)[0]?.value ?? ''
+            updateConfigValue({ toweraiModel: nextModel })
+          }}
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
         <p className="font-medium text-sm">Model</p>
         <Select
-          options={TOWERAI_COMMON_MODELS.map((item) => ({ name: item.label, value: item.value }))}
-          value={userConfig.toweraiModel}
+          options={providerModels.map((item) => ({ name: item.label, value: item.value }))}
+          value={selectedModel}
           onChange={(v) => updateConfigValue({ toweraiModel: v })}
         />
       </div>
