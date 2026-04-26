@@ -27,6 +27,7 @@ export default defineManifest(async () => {
       'https://*.poe.com/',
       'https://*.anthropic.com/',
       'https://*.claude.ai/',
+      'https://storage.googleapis.com/*',
       'https://tower-ai.yottastudios.com/*',
       'http://127.0.0.1/*',
       'http://localhost/*',

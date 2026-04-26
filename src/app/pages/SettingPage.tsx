@@ -92,6 +92,7 @@ function SettingPage() {
       }
       try {
         await Browser.permissions.request({ origins: [toweraiBaseUrl + '/*'] })
+        await Browser.permissions.request({ origins: ['https://storage.googleapis.com/*'] })
       } catch (e) {
         console.error(e)
       }
