@@ -1,4 +1,5 @@
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
+import DiscussionPanel from './DiscussionPanel'
 import { atomWithStorage } from 'jotai/utils'
 import { FC, Suspense, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -179,6 +180,9 @@ const MultiBotChatPanel: FC = () => {
   }
   if (layout === 'imageInput') {
     return <ImageInputPanel />
+  }
+  if (layout === 'discussion') {
+    return <DiscussionPanel />
   }
   return <TwoBotChatPanel />
 }
