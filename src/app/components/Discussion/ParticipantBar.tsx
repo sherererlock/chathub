@@ -9,8 +9,6 @@ interface Props {
   participants: BotId[]
   activeBotId: BotId
   onSelectActive: (botId: BotId) => void
-  onAddParticipant: (botId: BotId) => void
-  onRemoveParticipant: (botId: BotId) => void
 }
 
 const ParticipantBar: FC<Props> = ({ participants, activeBotId, onSelectActive }) => {

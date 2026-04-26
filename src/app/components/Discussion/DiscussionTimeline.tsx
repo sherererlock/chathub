@@ -1,5 +1,6 @@
 import { FC, useEffect, useRef } from 'react'
 import { BotId } from '~app/bots'
+import { CHATBOTS } from '~app/consts'
 import { DiscussionMessage } from '~types'
 import DiscussionMessageCard from './DiscussionMessageCard'
 
@@ -28,7 +29,7 @@ const DiscussionTimeline: FC<Props> = ({ messages, generatingBots, onQuote }) =>
       ))}
       {generatingBots.size > 0 && (
         <div className="text-xs text-light-text animate-pulse mt-1">
-          {[...generatingBots].join(', ')} 正在回复...
+          {[...generatingBots].map((id) => CHATBOTS[id]?.name ?? id).join(', ')} 正在回复...
         </div>
       )}
       <div ref={bottomRef} />

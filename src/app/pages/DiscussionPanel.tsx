@@ -9,7 +9,7 @@ import DiscussionInput from '~app/components/Discussion/DiscussionInput'
 
 const discussionParticipantsAtom = atomWithStorage<BotId[]>(
   'discussionParticipants',
-  ['towerai', 'towerai'],
+  ['towerai'],
   undefined,
   { getOnInit: true },
 )
@@ -40,8 +40,6 @@ const DiscussionPanel: FC = () => {
         participants={participants}
         activeBotId={activeBotId}
         onSelectActive={setActiveBotId}
-        onAddParticipant={(botId) => setParticipants((prev) => [...prev, botId])}
-        onRemoveParticipant={(botId) => setParticipants((prev) => prev.filter((b) => b !== botId))}
       />
       <DiscussionTimeline
         messages={messages}
@@ -49,7 +47,7 @@ const DiscussionPanel: FC = () => {
         onQuote={setReplyTo}
       />
       <DiscussionInput
-        disabled={false}
+        disabled={generatingBots.size > 0}
         replyTo={replyTo}
         replyMessage={replyMessage}
         participants={participants}

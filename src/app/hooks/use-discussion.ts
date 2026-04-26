@@ -100,13 +100,9 @@ export function useDiscussion(defaultParticipants: BotId[]) {
         mentionedBots: mentioned.length > 0 ? mentioned : undefined,
       }
 
-      setMessages((prev) => {
-        const history = prev
-        setTimeout(() => {
-          targetBots.forEach((botId) => sendToBot(botId, userMsg, history))
-        }, 0)
-        return [...prev, userMsg]
-      })
+      const historySnapshot = messages
+      setMessages((prev) => [...prev, userMsg])
+      targetBots.forEach((botId) => sendToBot(botId, userMsg, historySnapshot))
       setReplyTo(undefined)
 
       setParticipants((prev) => {
