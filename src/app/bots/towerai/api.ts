@@ -44,10 +44,17 @@ export function buildTowerAIUserMessage(prompt: string, imageUrl?: string): Towe
   }
 }
 
+export function isNewApiModel(model: string) {
+  return model.startsWith('deepseek')
+}
+
 export function resolveTowerAIEndpoint(baseUrl: string, model: string) {
   const normalizedBaseUrl = baseUrl.replace(/\/$/, '')
   if (model.startsWith('gemini') || model.startsWith('claude')) {
     return `${normalizedBaseUrl}/zi/webapi/chat/vertexai`
+  }
+  if (isNewApiModel(model)) {
+    return `${normalizedBaseUrl}/zi/webapi/chat/newapi`
   }
   return `${normalizedBaseUrl}/zi/webapi/chat/openai`
 }
@@ -156,6 +163,8 @@ export async function requestTowerAIChat(options: {
   signal?: AbortSignal
 }) {
   const enabledSearch = options.webSearch !== 'off' ? true : undefined
+  const isVertexai = options.model.startsWith('gemini') || options.model.startsWith('claude')
+  const isNewApi = isNewApiModel(options.model)
   const response = await fetch(resolveTowerAIEndpoint(options.baseUrl, options.model), {
     method: 'POST',
     signal: options.signal,
@@ -167,8 +176,10 @@ export async function requestTowerAIChat(options: {
       model: options.model,
       messages: options.messages,
       stream: true,
-      ...(enabledSearch !== undefined && { enabledSearch, searchMode: options.webSearch }),
-      ...(enabledSearch && options.useBuiltinSearch !== undefined && { useModelBuiltinSearch: options.useBuiltinSearch }),
+      ...(isNewApi && { apiMode: 'chatCompletion' }),
+      ...(enabledSearch !== undefined && !isNewApi && { enabledSearch }),
+      ...(enabledSearch !== undefined && isVertexai && { searchMode: options.webSearch }),
+      ...(enabledSearch && isVertexai && options.useBuiltinSearch !== undefined && { useModelBuiltinSearch: options.useBuiltinSearch }),
     }),
   })
 
@@ -183,24 +194,23 @@ export async function requestTowerAIChat(options: {
 export async function streamTowerAIResponse(
   response: Response,
   onText: (text: string) => void,
+  model?: string,
 ) {
   if (!response.body) {
     throw new ChatError('TowerAI response body missing', ErrorCode.TOWERAI_REQUEST_FAILED)
   }
 
+  const isVertexai = model?.startsWith('gemini') || model?.startsWith('claude')
+
   let answer = ''
   let stopped = false
   const decoder = new TextDecoder()
   const parser = createParser((event) => {
-    if (event.type !== 'event') {
-      return
-    }
-
+    if (event.type !== 'event') return
     if (event.event === 'text' && event.data) {
       answer += parseTowerAIText(event.data)
       onText(answer)
     }
-
     if (event.event === 'stop') {
       stopped = true
     }
@@ -209,14 +219,12 @@ export async function streamTowerAIResponse(
   for await (const chunk of streamAsyncIterable(response.body)) {
     parser.feed(decoder.decode(chunk, { stream: true }))
   }
-
   parser.feed(decoder.decode())
 
   if (!answer) {
     throw new ChatError('TowerAI returned an empty response', ErrorCode.TOWERAI_REQUEST_FAILED)
   }
-
-  if (!stopped) {
+  if (isVertexai && !stopped) {
     throw new ChatError('TowerAI stream ended before stop event', ErrorCode.TOWERAI_REQUEST_FAILED)
   }
 }

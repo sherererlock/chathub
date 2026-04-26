@@ -47,7 +47,7 @@ export interface TowerAIBotDependencies {
     useBuiltinSearch?: boolean
     signal?: AbortSignal
   }) => Promise<Response>
-  streamTowerAIResponse: (response: Response, onText: (text: string) => void) => Promise<void>
+  streamTowerAIResponse: (response: Response, onText: (text: string) => void, model?: string) => Promise<void>
 }
 
 const defaultDependencies: TowerAIBotDependencies = {
@@ -101,7 +101,7 @@ export class TowerAIBot extends AbstractBot {
       await this.deps.streamTowerAIResponse(response, (text) => {
         answer = text
         params.onEvent({ type: 'UPDATE_ANSWER', data: { text } })
-      })
+      }, model)
     } catch (error) {
       if (
         error instanceof ChatError &&
@@ -124,7 +124,7 @@ export class TowerAIBot extends AbstractBot {
         await this.deps.streamTowerAIResponse(retryResponse, (text) => {
           answer = text
           params.onEvent({ type: 'UPDATE_ANSWER', data: { text } })
-        })
+        }, model)
       } else {
         throw error
       }

@@ -1,4 +1,4 @@
-export type TowerAIProviderId = 'gpt' | 'claude' | 'gemini' | 'deepseek' | 'qwen'
+export type TowerAIProviderId = 'gpt' | 'claude' | 'gemini' | 'deepseek'
 
 export interface TowerAIModelOption {
   label: string
@@ -44,22 +44,7 @@ export const TOWERAI_MODEL_PROVIDERS: TowerAIModelProvider[] = [
     provider: 'deepseek',
     label: 'DeepSeek',
     models: [
-      { label: 'DeepSeek V3.2 Thinking', value: 'deepseek-reasoner' },
-      { label: 'DeepSeek V3', value: 'deepseek-r1' },
-      { label: 'DeepSeek V3.1', value: 'deepseek-v3' },
-      { label: 'DeepSeek V3.2', value: 'deepseek-chat' },
-      { label: 'DeepSeek V3 0324', value: 'deepseek-v3-0324' },
-    ],
-  },
-  {
-    provider: 'qwen',
-    label: 'Qwen',
-    models: [
-      { label: 'Qwen Long', value: 'qwen-long' },
-      { label: 'Qwen Max', value: 'qwen-max' },
-      { label: 'Qwen Plus', value: 'qwen-plus' },
-      { label: 'Qwen Turbo', value: 'qwen-turbo' },
-      { label: 'Qwen3 235B A22B', value: 'qwen3-235b-a22b' },
+      { label: 'DeepSeek V3', value: 'deepseek-v3-2' },
     ],
   },
 ]
