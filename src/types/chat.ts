@@ -20,4 +20,12 @@ export interface DiscussionMessage {
   replyTo?: string
   mentionedBots?: BotId[]
   error?: ChatError
+  authorDisplayName?: string
+}
+
+export interface DiscussionParticipant {
+  id: string
+  botId: BotId
+  displayName: string
+  modelId?: string
 }
