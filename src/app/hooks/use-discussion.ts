@@ -1,21 +1,21 @@
 import { useCallback, useRef, useState } from 'react'
-import { createBotInstance, BotId } from '~app/bots'
-import { CHATBOTS } from '~app/consts'
-import { DiscussionMessage } from '~types'
+import { DiscussionMessage, DiscussionParticipant } from '~types'
+import { createParticipantBot } from '~app/utils/discussion-participants'
 import { uuid } from '~utils'
 import { ChatError } from '~utils/errors'
+import { BotId } from '~app/bots'
 
-function parseMentions(input: string): BotId[] {
-  const mentioned: BotId[] = []
-  const regex = /@(\w+)/g
+function parseMentions(input: string, participants: DiscussionParticipant[]): DiscussionParticipant[] {
+  const mentioned: DiscussionParticipant[] = []
+  const regex = /@(\S+)/g
   let match
   while ((match = regex.exec(input)) !== null) {
-    const name = match[1].toLowerCase()
-    const botId = (Object.keys(CHATBOTS) as BotId[]).find(
-      (id) => CHATBOTS[id].name.toLowerCase().replace(/\s/g, '') === name || id === name,
+    const name = match[1].toLowerCase().replace(/\s/g, '')
+    const participant = participants.find(
+      (p) => p.displayName.toLowerCase().replace(/\s/g, '') === name || p.id.toLowerCase() === name,
     )
-    if (botId && !mentioned.includes(botId)) {
-      mentioned.push(botId)
+    if (participant && !mentioned.find((m) => m.id === participant.id)) {
+      mentioned.push(participant)
     }
   }
   return mentioned
@@ -24,39 +24,42 @@ function parseMentions(input: string): BotId[] {
 function formatHistoryPrompt(messages: DiscussionMessage[]): string {
   if (messages.length === 0) return ''
   const lines = messages.map((m) => {
-    const name = m.author === 'user' ? 'User' : CHATBOTS[m.author as BotId]?.name ?? m.author
+    const name = m.author === 'user' ? 'User' : m.authorDisplayName ?? m.author
     return `[${name}]: ${m.text}`
   })
   return `以下是多AI协作讨论的历史记录：\n\n${lines.join('\n\n')}\n\n请基于以上历史，回答用户的最新消息。`
 }
 
-export function useDiscussion(defaultParticipants: BotId[]) {
+export function useDiscussion(defaultParticipants: DiscussionParticipant[]) {
   const [messages, setMessages] = useState<DiscussionMessage[]>([])
-  const [participants, setParticipants] = useState<BotId[]>(defaultParticipants)
-  const [activeBotId, setActiveBotId] = useState<BotId>(defaultParticipants[0])
-  const [generatingBots, setGeneratingBots] = useState<Set<BotId>>(new Set())
+  const [participants, setParticipants] = useState<DiscussionParticipant[]>(defaultParticipants)
+  const [activeParticipant, setActiveParticipant] = useState<DiscussionParticipant>(defaultParticipants[0])
+  const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set())
   const [replyTo, setReplyTo] = useState<string | undefined>()
-  const abortControllers = useRef<Map<BotId, AbortController>>(new Map())
-  const botInstances = useRef<Map<BotId, ReturnType<typeof createBotInstance>>>(new Map())
+  const abortControllers = useRef<Map<string, AbortController>>(new Map())
+  const botInstances = useRef<Map<string, ReturnType<typeof createParticipantBot>>>(new Map())
 
-  const getBot = useCallback((botId: BotId) => {
-    if (!botInstances.current.has(botId)) {
-      botInstances.current.set(botId, createBotInstance(botId))
+  const getBot = useCallback((participant: DiscussionParticipant) => {
+    if (!botInstances.current.has(participant.id)) {
+      botInstances.current.set(participant.id, createParticipantBot(participant))
     }
-    return botInstances.current.get(botId)!
+    return botInstances.current.get(participant.id)!
   }, [])
 
-  const sendToBot = useCallback(
-    async (botId: BotId, userMessage: DiscussionMessage, history: DiscussionMessage[]) => {
-      const bot = getBot(botId)
+  const sendToParticipant = useCallback(
+    async (participant: DiscussionParticipant, userMessage: DiscussionMessage, history: DiscussionMessage[]) => {
+      const bot = getBot(participant)
       bot.resetConversation()
 
       const botMsgId = uuid()
-      setMessages((prev) => [...prev, { id: botMsgId, author: botId, text: '' }])
-      setGeneratingBots((prev) => new Set(prev).add(botId))
+      setMessages((prev) => [
+        ...prev,
+        { id: botMsgId, author: participant.botId as BotId | 'user', authorDisplayName: participant.displayName, text: '' },
+      ])
+      setGeneratingIds((prev) => new Set(prev).add(participant.id))
 
       const abortController = new AbortController()
-      abortControllers.current.set(botId, abortController)
+      abortControllers.current.set(participant.id, abortController)
 
       const historyPrompt = formatHistoryPrompt(history)
       const fullPrompt = historyPrompt
@@ -76,10 +79,10 @@ export function useDiscussion(defaultParticipants: BotId[]) {
           prev.map((m) => (m.id === botMsgId ? { ...m, error } : m)),
         )
       } finally {
-        abortControllers.current.delete(botId)
-        setGeneratingBots((prev) => {
+        abortControllers.current.delete(participant.id)
+        setGeneratingIds((prev) => {
           const next = new Set(prev)
-          next.delete(botId)
+          next.delete(participant.id)
           return next
         })
       }
@@ -89,32 +92,32 @@ export function useDiscussion(defaultParticipants: BotId[]) {
 
   const sendMessage = useCallback(
     (input: string) => {
-      const mentioned = parseMentions(input)
-      const targetBots = mentioned.length > 0 ? mentioned : [activeBotId]
+      const mentioned = parseMentions(input, participants)
+      const targets = mentioned.length > 0 ? mentioned : [activeParticipant]
 
       const userMsg: DiscussionMessage = {
         id: uuid(),
         author: 'user',
         text: input,
         replyTo,
-        mentionedBots: mentioned.length > 0 ? mentioned : undefined,
+        mentionedBots: mentioned.length > 0 ? mentioned.map((p) => p.botId as BotId) : undefined,
       }
 
       const historySnapshot = messages
       setMessages((prev) => [...prev, userMsg])
-      targetBots.forEach((botId) => sendToBot(botId, userMsg, historySnapshot))
+      targets.forEach((p) => sendToParticipant(p, userMsg, historySnapshot))
       setReplyTo(undefined)
 
       setParticipants((prev) => {
-        const toAdd = targetBots.filter((b) => !prev.includes(b))
+        const toAdd = targets.filter((t) => !prev.find((p) => p.id === t.id))
         return toAdd.length ? [...prev, ...toAdd] : prev
       })
     },
-    [activeBotId, replyTo, sendToBot],
+    [activeParticipant, messages, participants, replyTo, sendToParticipant],
   )
 
-  const stopBot = useCallback((botId: BotId) => {
-    abortControllers.current.get(botId)?.abort()
+  const stopParticipant = useCallback((participantId: string) => {
+    abortControllers.current.get(participantId)?.abort()
   }, [])
 
   const reset = useCallback(() => {
@@ -122,20 +125,20 @@ export function useDiscussion(defaultParticipants: BotId[]) {
     abortControllers.current.clear()
     botInstances.current.clear()
     setMessages([])
-    setGeneratingBots(new Set())
+    setGeneratingIds(new Set())
     setReplyTo(undefined)
   }, [])
 
   return {
     messages,
     participants,
-    activeBotId,
-    setActiveBotId,
-    generatingBots,
+    activeParticipant,
+    setActiveParticipant,
+    generatingIds,
     replyTo,
     setReplyTo,
     sendMessage,
-    stopBot,
+    stopParticipant,
     reset,
     setParticipants,
   }
