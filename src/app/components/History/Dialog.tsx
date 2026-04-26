@@ -5,7 +5,6 @@ import { FiSearch } from 'react-icons/fi'
 import { VscClearAll } from 'react-icons/vsc'
 import { BotId } from '~app/bots'
 import { CHATBOTS } from '~app/consts'
-import { usePremium } from '~app/hooks/use-premium'
 import { clearHistoryMessages } from '~services/chat-history'
 import Dialog from '../Dialog'
 import Tooltip from '../Tooltip'
@@ -36,7 +35,6 @@ interface Props {
 const HistoryDialog: FC<Props> = (props) => {
   const botName = useMemo(() => CHATBOTS[props.botId].name, [props.botId])
   const { t } = useTranslation()
-  const premiumState = usePremium()
   const [keyword, setKeyword] = useState('')
 
   const clearAll = useCallback(async () => {
@@ -59,7 +57,7 @@ const HistoryDialog: FC<Props> = (props) => {
             <VscClearAll size={18} className="opacity-80" />
           </div>
         </Tooltip>
-        <SearchInput disabled={!premiumState.activated} value={keyword} onChange={setKeyword} />
+        <SearchInput disabled={false} value={keyword} onChange={setKeyword} />
       </div>
       <HistoryContent botId={props.botId} keyword={keyword} />
     </Dialog>
