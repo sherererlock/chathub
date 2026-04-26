@@ -74,7 +74,7 @@ const DiscussionInput: FC<Props> = ({ disabled, replyMessage, participants, onCl
           placeholder="发送消息，或用 @模型名 指定AI回答..."
           className="flex-1 resize-none rounded-xl border border-primary-border bg-secondary-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
         />
-        <Button text={t('Send')} color="primary" onClick={handleSubmit} disabled={disabled} />
+        <Button text={t('Send')} color="primary" onClick={handleSubmit} isLoading={disabled} />
       </div>
     </div>
   )
