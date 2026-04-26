@@ -12,3 +12,12 @@ export interface ChatMessageModel {
 export interface ConversationModel {
   messages: ChatMessageModel[]
 }
+
+export interface DiscussionMessage {
+  id: string
+  author: BotId | 'user'
+  text: string
+  replyTo?: string
+  mentionedBots?: BotId[]
+  error?: ChatError
+}
