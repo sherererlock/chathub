@@ -40,4 +40,4 @@ __pycache__/
 .omc/
 .env
 
-*.ps1
+*.ps1.worktrees/
