@@ -36,6 +36,16 @@ const LayoutSwitch: FC<Props> = (props) => {
         active={props.layout === 'imageInput'}
         onClick={() => props.onChange('imageInput')}
       />
+      <a
+        className={cx(
+          props.layout === 'discussion' ? 'bg-[#00000014] dark:bg-[#ffffff26] rounded-[6px]' : '',
+          'px-2 py-1 text-xs cursor-pointer'
+        )}
+        onClick={() => props.onChange('discussion')}
+        title="讨论模式"
+      >
+        💬
+      </a>
     </div>
   )
 }
