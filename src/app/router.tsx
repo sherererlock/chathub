@@ -1,6 +1,7 @@
 import { createHashHistory, createRootRoute, createRoute, createRouter, useParams } from '@tanstack/react-router'
 import { BotId } from './bots'
 import Layout from './components/Layout'
+import DiscussionPanel from './pages/DiscussionPanel'
 import MultiBotChatPanel from './pages/MultiBotChatPanel'
 import PremiumPage from './pages/PremiumPage'
 import SettingPage from './pages/SettingPage'
@@ -48,7 +49,13 @@ export const premiumRoute = createRoute({
   },
 })
 
-const routeTree = rootRoute.addChildren([layoutRoute.addChildren([indexRoute, chatRoute, settingRoute, premiumRoute])])
+const discussionRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: 'discussion',
+  component: DiscussionPanel,
+})
+
+const routeTree = rootRoute.addChildren([layoutRoute.addChildren([indexRoute, chatRoute, settingRoute, premiumRoute, discussionRoute])])
 
 const hashHistory = createHashHistory()
 const router = createRouter({ routeTree, history: hashHistory })

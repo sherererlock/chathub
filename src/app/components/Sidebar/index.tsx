@@ -80,6 +80,7 @@ function Sidebar() {
       </div>
       <div className="flex flex-col gap-[13px] mt-10 overflow-y-auto scrollbar-none">
         <NavLink to="/" text={'All-In-One'} icon={allInOneIcon} iconOnly={collapsed} />
+        <NavLink to="/discussion" text="讨论模式" icon={allInOneIcon} iconOnly={collapsed} />
         {enabledBots.map(({ botId, bot }) => (
           <NavLink
             key={botId}
