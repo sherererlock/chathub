@@ -17,6 +17,7 @@ import Tooltip from '../Tooltip'
 import ChatMessageInput from './ChatMessageInput'
 import ChatMessageList from './ChatMessageList'
 import ChatbotName from './ChatbotName'
+import TowerAIModelSelector from './TowerAIModelSelector'
 import WebAccessCheckbox from './WebAccessCheckbox'
 
 interface Props {
@@ -90,7 +91,7 @@ const ConversationPanel: FC<Props> = (props) => {
             marginClass,
           )}
         >
-          <div className="flex flex-row items-center">
+          <div className="flex flex-row items-center gap-2">
             <motion.img
               src={botInfo.avatar}
               className="w-[18px] h-[18px] object-contain rounded-sm mr-2"
@@ -102,6 +103,7 @@ const ConversationPanel: FC<Props> = (props) => {
               fullName={props.bot.name}
               onSwitchBot={mode === 'compact' ? props.onSwitchBot : undefined}
             />
+            {props.botId === 'towerai' && <TowerAIModelSelector bot={props.bot} />}
           </div>
           <WebAccessCheckbox botId={props.botId} />
           <div className="flex flex-row items-center gap-3">

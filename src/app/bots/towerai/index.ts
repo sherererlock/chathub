@@ -59,9 +59,14 @@ const defaultDependencies: TowerAIBotDependencies = {
 
 export class TowerAIBot extends AbstractBot {
   private conversationContext?: ConversationContext
+  private instanceModel: string | null = null
 
   constructor(private readonly deps: TowerAIBotDependencies = defaultDependencies) {
     super()
+  }
+
+  setModel(model: string) {
+    this.instanceModel = model
   }
 
   async doSendMessage(params: SendMessageParams) {
@@ -70,7 +75,7 @@ export class TowerAIBot extends AbstractBot {
     }
 
     const config = await this.deps.getUserConfig()
-    const model = this.deps.resolveTowerAIModel(config.toweraiModel, config.toweraiCustomModel)
+    const model = this.instanceModel ?? this.deps.resolveTowerAIModel(config.toweraiModel, config.toweraiCustomModel)
     const credentials = await this.deps.resolveTowerAICredentials(config)
     const imageUrl = params.image ? await this.deps.imageToDataUrl(params.image) : undefined
     const userMessage = this.deps.buildTowerAIUserMessage(params.rawUserInput || params.prompt, imageUrl)
