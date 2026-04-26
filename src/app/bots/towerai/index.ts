@@ -3,12 +3,11 @@ import { ChatError, ErrorCode } from '~utils/errors'
 import { AbstractBot, SendMessageParams } from '../abstract-bot'
 import {
   buildTowerAIUserMessage,
+  imageToDataUrl,
   requestTowerAIChat,
   streamTowerAIResponse,
   type TowerAICredentials,
   type TowerAIChatMessage,
-  type TowerAIUploadedImage,
-  uploadTowerAIImage,
   isTowerAITokenExpiredError,
 } from './api'
 import { refreshTowerAICredentials, resolveTowerAICredentials } from './helper'
@@ -36,12 +35,7 @@ export interface TowerAIBotDependencies {
   resolveTowerAICredentials: (config: TowerAIBotConfig) => Promise<TowerAICredentials>
   refreshTowerAICredentials: (config: TowerAIBotConfig) => Promise<TowerAICredentials>
   buildTowerAIUserMessage: (prompt: string, imageUrl?: string) => TowerAIChatMessage
-  uploadTowerAIImage: (options: {
-    baseUrl: string
-    file: File
-    credentials: TowerAICredentials
-    signal?: AbortSignal
-  }) => Promise<TowerAIUploadedImage>
+  imageToDataUrl: (file: File) => Promise<string>
   requestTowerAIChat: (options: {
     baseUrl: string
     model: string
@@ -58,7 +52,7 @@ const defaultDependencies: TowerAIBotDependencies = {
   resolveTowerAICredentials,
   refreshTowerAICredentials,
   buildTowerAIUserMessage,
-  uploadTowerAIImage,
+  imageToDataUrl,
   requestTowerAIChat,
   streamTowerAIResponse,
 }
@@ -78,17 +72,7 @@ export class TowerAIBot extends AbstractBot {
     const config = await this.deps.getUserConfig()
     const model = this.deps.resolveTowerAIModel(config.toweraiModel, config.toweraiCustomModel)
     const credentials = await this.deps.resolveTowerAICredentials(config)
-    // 上传可能产生远端副作用，这里失败后直接抛出，不做自动重试。
-    const imageUrl = params.image
-      ? (
-          await this.deps.uploadTowerAIImage({
-            baseUrl: config.toweraiBaseUrl,
-            file: params.image,
-            credentials,
-            signal: params.signal,
-          })
-        ).url
-      : undefined
+    const imageUrl = params.image ? await this.deps.imageToDataUrl(params.image) : undefined
     const userMessage = this.deps.buildTowerAIUserMessage(params.rawUserInput || params.prompt, imageUrl)
     const messages = [...this.conversationContext.messages, userMessage]
 

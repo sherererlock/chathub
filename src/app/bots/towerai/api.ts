@@ -56,6 +56,15 @@ export function isTowerAITokenExpiredError(message: string) {
   return message.includes('600015') || message.includes('token过期')
 }
 
+export function imageToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = () => reject(new Error('Failed to read image file'))
+    reader.readAsDataURL(file)
+  })
+}
+
 export async function uploadTowerAIImage(options: {
   baseUrl: string
   file: File

@@ -36,8 +36,8 @@ async function createBot(overrides: Partial<TowerAIBotDependencies> = {}) {
     resolveTowerAICredentials: async () => credentials,
     refreshTowerAICredentials: async () => credentials,
     buildTowerAIUserMessage,
-    uploadTowerAIImage: async () => {
-      throw new Error('uploadTowerAIImage should be mocked for this test')
+    imageToDataUrl: async () => {
+      throw new Error('imageToDataUrl should be mocked for this test')
     },
     requestTowerAIChat: async () => new Response(null, { status: 200 }),
     streamTowerAIResponse: async () => undefined,
@@ -57,8 +57,8 @@ test('TowerAIBot sends text prompts, streams updates, and keeps conversation his
       assert.equal(custom, '')
       return 'resolved-model'
     },
-    uploadTowerAIImage: async () => {
-      throw new Error('text-only prompts should not upload images')
+    imageToDataUrl: async () => {
+      throw new Error('text-only prompts should not call imageToDataUrl')
     },
     requestTowerAIChat: async (options) => {
       requests.push({ model: options.model, messages: options.messages })
@@ -111,19 +111,14 @@ test('TowerAIBot sends text prompts, streams updates, and keeps conversation his
   ])
 })
 
-test('TowerAIBot uploads images and sends a multimodal user message', async () => {
+test('TowerAIBot converts image to data URL and sends a multimodal user message', async () => {
   const image = new File(['png-bytes'], 'tower.png', { type: 'image/png' })
-  const uploadCalls: Array<{ file: File; baseUrl: string; signal?: AbortSignal }> = []
+  const dataUrlCalls: File[] = []
   const requests: Array<unknown[]> = []
   const bot = await createBot({
-    uploadTowerAIImage: async (options) => {
-      uploadCalls.push(options)
-      return {
-        fileId: 'file-1',
-        url: 'https://cdn.example.com/tower.png',
-        mimeType: options.file.type,
-        name: options.file.name,
-      }
+    imageToDataUrl: async (file) => {
+      dataUrlCalls.push(file)
+      return 'data:image/png;base64,cG5nLWJ5dGVz'
     },
     requestTowerAIChat: async (options) => {
       requests.push(options.messages)
@@ -142,14 +137,7 @@ test('TowerAIBot uploads images and sends a multimodal user message', async () =
     onEvent: (event) => events.push(event),
   })
 
-  assert.deepEqual(uploadCalls, [
-    {
-      baseUrl: 'https://tower-ai.yottastudios.com',
-      file: image,
-      credentials: { token: 'token-1', authToken: 'auth-1' },
-      signal: undefined,
-    },
-  ])
+  assert.deepEqual(dataUrlCalls, [image])
   assert.deepEqual(requests, [
     [
       {
@@ -158,7 +146,7 @@ test('TowerAIBot uploads images and sends a multimodal user message', async () =
           { type: 'text', text: 'describe the uploaded image' },
           {
             type: 'image_url',
-            image_url: { url: 'https://cdn.example.com/tower.png', detail: 'auto' },
+            image_url: { url: 'data:image/png;base64,cG5nLWJ5dGVz', detail: 'auto' },
           },
         ],
       },
@@ -175,8 +163,8 @@ test('TowerAIBot surfaces image upload failures without sending a chat request',
   const requests: Array<unknown[]> = []
   let streamCallCount = 0
   const bot = await createBot({
-    uploadTowerAIImage: async () => {
-      throw new ChatError('TowerAI image upload failed', ErrorCode.TOWERAI_REQUEST_FAILED)
+    imageToDataUrl: async () => {
+      throw new ChatError('TowerAI image read failed', ErrorCode.TOWERAI_REQUEST_FAILED)
     },
     requestTowerAIChat: async (options) => {
       requests.push(options.messages)
