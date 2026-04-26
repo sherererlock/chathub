@@ -1,21 +1,24 @@
 import { FC, useEffect, useRef } from 'react'
-import { BotId } from '~app/bots'
-import { CHATBOTS } from '~app/consts'
-import { DiscussionMessage } from '~types'
+import { DiscussionMessage, DiscussionParticipant } from '~types'
 import DiscussionMessageCard from './DiscussionMessageCard'
 
 interface Props {
   messages: DiscussionMessage[]
-  generatingBots: Set<BotId>
+  generatingIds: Set<string>
+  participants: DiscussionParticipant[]
   onQuote: (messageId: string) => void
 }
 
-const DiscussionTimeline: FC<Props> = ({ messages, generatingBots, onQuote }) => {
+const DiscussionTimeline: FC<Props> = ({ messages, generatingIds, participants, onQuote }) => {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  const generatingNames = [...generatingIds].map(
+    (id) => participants.find((p) => p.id === id)?.displayName ?? id,
+  )
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-3">
@@ -27,9 +30,9 @@ const DiscussionTimeline: FC<Props> = ({ messages, generatingBots, onQuote }) =>
           onQuote={onQuote}
         />
       ))}
-      {generatingBots.size > 0 && (
+      {generatingNames.length > 0 && (
         <div className="text-xs text-light-text animate-pulse mt-1">
-          {[...generatingBots].map((id) => CHATBOTS[id]?.name ?? id).join(', ')} 正在回复...
+          {generatingNames.join(', ')} 正在回复...
         </div>
       )}
       <div ref={bottomRef} />

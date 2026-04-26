@@ -23,7 +23,7 @@ const DiscussionMessageCard: FC<Props> = ({ message, allMessages, onQuote }) => 
       )}
       <div className={cx('flex flex-col max-w-[75%]', isUser ? 'items-end' : 'items-start')}>
         {!isUser && (
-          <span className="text-xs text-light-text mb-1">{botInfo?.name}</span>
+          <span className="text-xs text-light-text mb-1">{message.authorDisplayName ?? botInfo?.name}</span>
         )}
         {quotedMsg && (
           <div className="text-xs text-light-text bg-secondary-background rounded px-2 py-1 mb-1 border-l-2 border-blue-400 max-w-full truncate">
