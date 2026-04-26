@@ -226,6 +226,27 @@ const TowerAISettings: FC<Props> = ({ userConfig, updateConfigValue }) => {
         />
       </div>
 
+      <div className="flex flex-col gap-1">
+        <p className="font-medium text-sm">Web Search Mode</p>
+        <Select
+          options={[
+            { name: '联网搜索 (Always on)', value: 'on' },
+            { name: '智能联网 (Auto)', value: 'smart' },
+            { name: '关闭联网 (Off)', value: 'off' },
+          ]}
+          value={userConfig.toweraiWebSearch}
+          onChange={(v) => updateConfigValue({ toweraiWebSearch: v as 'off' | 'smart' | 'on' })}
+        />
+      </div>
+
+      <div className="flex flex-row items-center justify-between">
+        <p className="font-medium text-sm">Use Model Built-in Search Engine</p>
+        <Toggle
+          enabled={userConfig.toweraiUseBuiltinSearch}
+          onChange={(enabled) => updateConfigValue({ toweraiUseBuiltinSearch: enabled })}
+        />
+      </div>
+
       <Blockquote>
         Helper mode reads credentials from the local TowerAI helper. Manual credentials remain available as a fallback.
       </Blockquote>

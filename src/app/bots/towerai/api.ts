@@ -151,8 +151,11 @@ export async function requestTowerAIChat(options: {
   model: string
   messages: TowerAIChatMessage[]
   credentials: TowerAICredentials
+  webSearch?: 'off' | 'smart' | 'on'
+  useBuiltinSearch?: boolean
   signal?: AbortSignal
 }) {
+  const enabledSearch = options.webSearch !== 'off' ? true : undefined
   const response = await fetch(resolveTowerAIEndpoint(options.baseUrl, options.model), {
     method: 'POST',
     signal: options.signal,
@@ -164,6 +167,8 @@ export async function requestTowerAIChat(options: {
       model: options.model,
       messages: options.messages,
       stream: true,
+      ...(enabledSearch !== undefined && { enabledSearch, searchMode: options.webSearch }),
+      ...(enabledSearch && options.useBuiltinSearch !== undefined && { useModelBuiltinSearch: options.useBuiltinSearch }),
     }),
   })
 

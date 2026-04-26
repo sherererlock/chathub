@@ -27,6 +27,8 @@ export type TowerAIBotConfig = Pick<
   | 'toweraiToken'
   | 'toweraiAuthToken'
   | 'toweraiAutoRefresh'
+  | 'toweraiWebSearch'
+  | 'toweraiUseBuiltinSearch'
 >
 
 export interface TowerAIBotDependencies {
@@ -41,6 +43,8 @@ export interface TowerAIBotDependencies {
     model: string
     messages: TowerAIChatMessage[]
     credentials: TowerAICredentials
+    webSearch?: 'off' | 'smart' | 'on'
+    useBuiltinSearch?: boolean
     signal?: AbortSignal
   }) => Promise<Response>
   streamTowerAIResponse: (response: Response, onText: (text: string) => void) => Promise<void>
@@ -89,6 +93,8 @@ export class TowerAIBot extends AbstractBot {
         model,
         messages,
         credentials,
+        webSearch: config.toweraiWebSearch,
+        useBuiltinSearch: config.toweraiUseBuiltinSearch,
         signal: params.signal,
       })
 
@@ -110,6 +116,8 @@ export class TowerAIBot extends AbstractBot {
           model,
           messages,
           credentials: refreshedCredentials,
+          webSearch: config.toweraiWebSearch,
+          useBuiltinSearch: config.toweraiUseBuiltinSearch,
           signal: params.signal,
         })
 

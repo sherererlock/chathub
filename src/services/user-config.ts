@@ -90,6 +90,8 @@ const userConfigWithDefaultValue = {
   toweraiCustomModel: '',
   toweraiHelperUrl: 'http://127.0.0.1:21941',
   toweraiAutoRefresh: true,
+  toweraiWebSearch: 'on' as 'off' | 'smart' | 'on',
+  toweraiUseBuiltinSearch: true,
 }
 
 export type UserConfig = typeof userConfigWithDefaultValue

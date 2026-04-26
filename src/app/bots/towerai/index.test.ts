@@ -14,6 +14,8 @@ function createConfig(overrides: Partial<TowerAIBotConfig> = {}): TowerAIBotConf
     toweraiToken: '',
     toweraiAuthToken: '',
     toweraiAutoRefresh: true,
+    toweraiWebSearch: 'on',
+    toweraiUseBuiltinSearch: true,
     ...overrides,
   }
 }
